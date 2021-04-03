@@ -1,56 +1,61 @@
-class solver
-{
-private:
+vector<int> graph[10001];
+bool visited[10001];
 
-public:
-    void distance(Node *root, int k,vector<int> &v) 
-{ 
-    if (root == NULL || k < 0)
-    return;
-    if (k==0) 
-    { 
-        v.push_back(root->data); 
-        return; 
+
+    void preorder(Node *root){
+        if(root==NULL)
+            return;
+        if(root->left)
+        {
+            graph[root->data].push_back(root->left->data);
+            graph[root->left->data].push_back(root->data);
+        } 
+        
+        if(root->right)
+        {
+            graph[root->data].push_back(root->right->data);
+            graph[root->right->data].push_back(root->data);
+        }
+        
+        preorder(root->left);
+        preorder(root->right);
     }
-    distance(root->left, k-1,v); 
-    distance(root->right, k-1,v); 
-} 
-int subtree(Node* root, int target , int k,vector<int> &v) 
-{ 
-    if (root == NULL) 
-    return -1; 
-    if (root->data == target) 
-    { 
-        distance(root, k,v); 
-        return 0; 
-    }
-    int dl = subtree(root->left, target, k,v); 
-    if (dl != -1) 
-    { 
-         if (dl + 1 == k) 
-            v.push_back(root->data);  
-         else
-            distance(root->right, k-dl-2,v); 
-  
-         return 1 + dl; 
-    }
- int dr = subtree(root->right, target, k,v); 
-    if (dr != -1) 
-    { 
-         if (dr + 1 == k) 
-            v.push_back(root->data);  
-         else
-            distance(root->left, k-dr-2,v); 
-         return 1 + dr; 
-    } 
-  
-    return -1; 
-} 
+    
+    
     vector <int> KDistanceNodes(Node* root, int target , int k)
     {
-      vector<int>v;
-       int a= subtree(root,target,k,v);
-       sort(v.begin(),v.end());
-    return v;  
+        for(int i=0;i<10001;i++)
+            graph[i].clear();
+
+        preorder(root);
+        
+        memset(visited,false,sizeof(visited));
+        
+        queue<int>q;
+        
+        vector<int> ans;
+        
+        q.push(target);
+        while(!q.empty() && k--)
+        {
+            int len = q.size();
+            while(len--)
+            {
+                int v = q.front();
+                visited[v] = true;
+                q.pop();
+                for(int u : graph[v])
+                    if(visited[u] == false)
+                        q.push(u);
+            }
+        }
+        
+        while(!q.empty())                       //remaining elements in the queue will be answer
+        {
+            ans.push_back(q.front());
+            q.pop();
+        }
+        
+        sort(ans.begin(), ans.end());
+        return ans;
     }
-};  
